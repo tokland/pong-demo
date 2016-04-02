@@ -1,14 +1,18 @@
+#!/usr/bin/env python
 import collections
 import time
 import math
+
 import pygame
 
 struct = collections.namedtuple
 
+# Data structures
+
 Ball = struct("Ball", 
   ["pos_x", "pos_y", "width", "height", "speed_x", "speed_y", "image", "sound"])
 Paddle = struct("Paddle", 
-  ["pos_x", "pos_y", "width", "height", "speed_y", "image"])
+  ["pos_x", "pos_y", "width", "height", "max_speed_y", "image"])
 Field = struct("Field", 
   ["width", "height", "ball", "paddle", "image"])
 Game = struct("Game", 
@@ -16,11 +20,13 @@ Game = struct("Game",
 
 def ball_hits_paddle(ball, paddle):
     """Return True if the ball has hit the paddle."""
-    return (ball.speed_x < 0 and 
+    return (
+        ball.speed_x < 0 and 
         ball.pos_x >= paddle.pos_x + paddle.width / 2.0 and
         ball.pos_x < paddle.pos_x + paddle.width and
         ball.pos_y + ball.height > paddle.pos_y and
-        ball.pos_y <= paddle.pos_y + paddle.height)
+        ball.pos_y <= paddle.pos_y + paddle.height
+    )
 
 def get_new_ball(field, delta_t):
     """
@@ -39,7 +45,6 @@ def get_new_ball(field, delta_t):
             ball.sound.play()
             new_speed_x = abs(ball.speed_x)
             speed = math.sqrt(new_speed_x**2  + ball.speed_y**2)
-            print("speed: {0}".format(int(speed)))
         elif ball.speed_x > 0 and new_ball.pos_x + ball.width >= field.width:
             ball.sound.play()
             new_speed_x = -abs(ball.speed_x)
@@ -62,9 +67,9 @@ def get_new_paddle(field, keys, delta_t):
     """Return a new paddle (keys: UP/DOWN)."""
     paddle = field.paddle
     if keys[pygame.K_DOWN]:
-        paddle_speed_y = paddle.speed_y
+        paddle_speed_y = paddle.max_speed_y
     elif keys[pygame.K_UP]:
-        paddle_speed_y = -paddle.speed_y
+        paddle_speed_y = -paddle.max_speed_y
     else:
         paddle_speed_y = 0
 
@@ -91,8 +96,6 @@ def draw_game(game):
       
 def loop_game(game):
     """Loop the game state."""
-    pygame.mixer.music.load("media/tiger.stm")
-    pygame.mixer.music.play()
     time0 = time.time()
     while 1:
         draw_game(game)
@@ -117,7 +120,7 @@ def build_game(screen_size):
         speed_x=550, speed_y=300)
     
     paddle_image = pygame.image.load("media/paddle.png")
-    paddle = Paddle(image=paddle_image, pos_x=10, pos_y=100, speed_y=600, 
+    paddle = Paddle(image=paddle_image, pos_x=10, pos_y=100, max_speed_y=600, 
         width=paddle_image.get_width(), height=paddle_image.get_height())
     
     width, height = screen_size
@@ -131,6 +134,8 @@ def run():
     """Run the loop game."""
     pygame.init()
     game = build_game(screen_size=(640, 480))
+    pygame.mixer.music.load("media/tiger.stm")
+    pygame.mixer.music.play()
     loop_game(game)
 
 run()
